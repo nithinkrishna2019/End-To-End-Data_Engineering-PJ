@@ -3,13 +3,11 @@ from airflow import DAG
 from airflow.utils.dates import days_ago
 from datetime import datetime
 from airflow.operators.python import PythonOperator
-from Weather_Data_Generator_DAG import generate_weather_data
-# from Weather_Data_Generator_DAG import get_weather_conditions
-
+from Weather_Data_Generation_DAG import generate_weather_data
 import json
 import random
 import boto3
-import uuid 
+import uuid
 
 
 default_arguments={
@@ -28,8 +26,8 @@ dag = DAG(
      'Weather_Data_Generation_DAG',
      default_args=default_arguments,
      description='Generate Weather Data',
-     schedule_interval='*/1 * * * *',  # Run every 1 minute
-     ##schedule_interval='schedule_interval',  # This ensures the DAG runs ONLY when triggered manually
+     schedule_interval='*/5 * * * *',
+    # schedule_interval=None,  # This ensures the DAG runs ONLY when triggered manually
      catchup=False,  # Prevents running past missed intervals
  )
 
