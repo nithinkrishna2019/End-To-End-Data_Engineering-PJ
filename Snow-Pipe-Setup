@@ -1,0 +1,37 @@
+-- CREATE OR REPLACE STORAGE INTEGRATION my_s3_integration
+-- TYPE = EXTERNAL_STAGE
+-- STORAGE_PROVIDER = 'S3'
+-- ENABLED = TRUE
+-- STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::your_account_number:role/Snow-Flake-access-To-S3-Role'
+-- STORAGE_ALLOWED_LOCATIONS = ('s3://aws-glue-s3-bucket/End-to-End-PJ/transformed_data/');
+
+-- DESC STORAGE INTEGRATION my_s3_integration; --in the command output look for "STORAGE_AWS_IAM_USER_ARN" and copy the role arn to "Snow-Flake-access-To-S3-Role" trustpolicy
+
+-- CREATE OR REPLACE STAGE my_s3_stage
+-- URL = 's3://aws-glue-s3-bucket/End-to-End-PJ/transformed_data/'
+-- STORAGE_INTEGRATION = my_s3_integration
+-- FILE_FORMAT = (TYPE = 'csv');
+
+-- LIST @my_s3_stage; --if you see the output that means you are able to access to s3
+
+-- DROP PIPE WEATHER_SNOWPIPE;
+
+-- CREATE OR REPLACE PIPE weather_snowpipe
+-- AUTO_INGEST = TRUE 
+-- AS 
+-- COPY INTO WEATHER_STREAMING_DATA
+-- FROM @my_s3_stage 
+-- FILE_FORMAT = (TYPE = 'csv', SKIP_HEADER = 1);
+
+show pipes; -- then copy the notification_channel arn and setup accordingly in the s3 event notification
+
+-- ALTER PIPE WEATHER_SNOWPIPE REFRESH; -- do this if you manually want to trigger your pipe
+
+SELECT *
+From WEATHER_STREAMING_DATA  --check if you are getting data in real time
+
+SELECT SYSTEM$PIPE_STATUS('weather_snowpipe'); --check your pipe is running 
+
+SELECT * FROM TABLE(INFORMATION_SCHEMA.COPY_HISTORY(TABLE_NAME=>'WEATHER_STREAMING_DATA', START_TIME=>DATEADD('HOUR', -1, CURRENT_TIMESTAMP()))); --to check what happened with your last pipe run
+
+
