@@ -30,18 +30,16 @@ def lambda_handler(event,context):
             # Copy file to the destination
             s3_client.copy_object(
                 Bucket=bucket_name,
-                CopySource={'Bucket': bucket_name, 'Key': file_key},
+                CopySource={'Bucket': bucket_name, 'Key': i},
                 Key=destination_key
             )
-            print(f"Copied: {file_key} -> {destination_key}")
+            print(f"Copied: {i} -> {destination_key}")
 
             # Delete file from the source
-            s3_client.delete_object(Bucket=bucket_name, Key=file_key)
-            print(f"Deleted: {file_key}")
+            s3_client.delete_object(Bucket=bucket_name, Key=i)
+            print(f"Deleted: {i}")
 
         return {"Moved Files": file_names}
     else:
         print("No files found in the source folder.")
         return {"Moved Files": []}
-
-lambda_handler()
